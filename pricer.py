@@ -2,6 +2,8 @@ import argparse
 import re
 import psycopg2
 
+#test
+
 def add_item(items, date, name, price):
     items[date] = (name, price)
     return items
