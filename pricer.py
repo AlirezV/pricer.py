@@ -1,6 +1,7 @@
 import argparse
 import re
 import psycopg2
+from setting import valied_names
 
 def connect():
     conn = psycopg2.connect( user="postgres", password="1234", database="postgres")
@@ -10,8 +11,7 @@ def add_item(items, date, name, price):
     items[date] = (name, price)
     return items
 
-def save_to_psql(items, conn):
-    valied_names = ["bitcoin", "dogecoin", "dollar_toman", "ethereum", "seke_toman"]
+def save(items, conn):
     if items[date][0] not in valied_names:
         print("Name is not correct!")        
     else:
@@ -25,18 +25,16 @@ def save_to_psql(items, conn):
         except psycopg2.Error as e:
             print("database error: %s" % e)
     
-def load_from_psql(table_name, conn):
+def load(table_name, conn):
     items = {}
-    valied_tables = ["bitcoin", "dogecoin", "dollar_toman", "ethereum", "seke_toman"]
-    if table_name not in valied_tables:
+    if table_name not in valied_names:
         print("Table name is not correct!")        
     try:
         cursor = conn.cursor()
         cursor.execute("select * from %s;" % table_name)
-        iitems = cursor.fetchall()
-        for row in iitems:
+        item = cursor.fetchall()
+        for row in item:
             date, name, price = row
-            #date = re.sub(r'(.*)-(.*)-(.*)',r'\1/\2/\3',time)
             items[date] = (name , price)
         cursor.close()
         conn.close()
@@ -87,12 +85,12 @@ def main():
 
     args = parser.parse_args()
     conn = connect()
-    items = load_from_psql(args.name, conn) if args.name else {}
+    items = load(args.name, conn) if args.name else {}
 
     if args.action == "add":
         if args.date and args.name and args.price is not None:
             items = add_item(items, args.date, args.name, args.price)
-            save_to_psql(items, conn)
+            save(items, conn)
             print(f"item: '{args.name}' at the price {args.price} on date of {args.date} added.")
         else:
             print("please insert name, price and date of currency.")
