@@ -114,29 +114,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-
-#def save_to_csv(items, filename="prices.csv"):
-#    with open(filename, mode="w", newline='') as file:
- #       writer = csv.writer(file)
-  #      writer.writerow(["Name", "Price"])
-   #     for name, price in items.items():
-    #        writer.writerow([name, price])
-
-
-#def load_from_csv(filename="items.csv"):
- #   items = {}
-  #  try:
-   #     with open(filename, mode="r") as file:
-    #        reader = csv.reader(file)
-     #       next(reader)  
-      #      for row in reader:
-       #         name, price = row
-        #        items[name] = float(price)
-#    except FileNotFoundError:
- #       pass
-  #  return items
