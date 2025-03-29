@@ -1,0 +1,2 @@
+psycopg2==2.9.10
+Requests==2.32.3

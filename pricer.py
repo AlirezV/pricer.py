@@ -1,10 +1,10 @@
 import argparse
-import re
 import psycopg2
-from setting import valied_names
+from setting import valied_names, user, password, database
 
 def connect():
-    conn = psycopg2.connect( user="postgres", password="1234", database="postgres")
+    conn = psycopg2.connect( user=user, password=password,
+                            database=database)
     return conn
 
 def disconnect():
@@ -20,7 +20,8 @@ def save(date, name, price):
     else:
         try:
             cursor = conn.cursor() 
-            cursor.execute("insert into %s values ('%s', '%s', %s );" %(name, date, name, price ))
+            cursor.execute("insert into %s values ('%s', '%s', %s );"
+                           %(name, date, name, price ))
             conn.commit() 
         except psycopg2.Error as e:
             print("database error: %s" % e)
@@ -50,7 +51,8 @@ def db_select_one(name, type, column):
     else:
         try:
             cursor = conn.cursor()
-            cursor.execute("select * from %s where %s='%s';" %(name, type, column))
+            cursor.execute("select * from %s where %s='%s';"
+                           %(name, type, column))
             one = cursor.fetchall()
             date, name, price = one
             item[date] = (name, price)
@@ -67,7 +69,8 @@ def filter_item(items):
             print(f"{date}-{name}: {price}")
 
 def sort_items(items, reverse=False):
-    sorted_items = dict(sorted(items.items(), key=lambda item: item[1], reverse=reverse))
+    sorted_items = dict(sorted(items.items(), key=lambda item: item[1],
+                               reverse=reverse))
     display_items(sorted_items)
 
 def report(name):
@@ -97,11 +100,13 @@ def price_item(date, name):
          
 def main():
     parser = argparse.ArgumentParser(description="pricing plan")
-    parser.add_argument("action", choices=["add", "list", "filter", "sort", "report", "price"], help="The opeartion you want to performe")
+    parser.add_argument("action", choices=["add", "list", "filter", "sort",
+            "report", "price"], help="The opeartion you want to performe")
     parser.add_argument("--date", type=str, help="item date")
     parser.add_argument("--name", type=str, help="item name")
     parser.add_argument("--price", type=float, help="item price")
-    parser.add_argument("--reverse", action="store_true", help="sort in descending order")
+    parser.add_argument("--reverse", action="store_true",
+                        help="sort in descending order")
 
     args = parser.parse_args()
     items = db_select_all(args.name) if args.name else {}
@@ -138,7 +143,7 @@ def main():
         else:
             print("please provide both --name and --date!")
             
-    disconnect()
+    disconnect() #from psql database
     
 if __name__ == "__main__":
     main()
