@@ -1,4 +1,27 @@
-valied_names = ["bitcoin", "dogecoin", "dollar_toman", "ethereum", "seke_toman"]
+valied_names = ['bitcoin', 'ethereum', 'tether', 'ripple', 'binancecoin',
+                'solana', 'usd-coin', 'dogecoin', 'cardano', 'tron', 'staked-ether', 
+                'wrapped-bitcoin', 'the-open-network', 'chainlink', 'leo-token',
+                'stellar', 'wrapped-steth', 'avalanche-2', 'usds', 'sui', 'shiba-inu',
+                'hedera-hashgraph', 'litecoin', 'polkadot', 'mantra-dao',
+                'bitcoin-cash', 'bitget-token', 'weth', 'ethena-usde',
+                'binance-bridged-usdt-bnb-smart-chain', 'pi-network', 
+                'hyperliquid', 'wrapped-eeth', 'whitebit', 'monero', 
+                'uniswap', 'aptos', 'dai', 'pepe', 'near', 'susds', 'okb',
+                'crypto-com-chain', 'gatechain-token', 'coinbase-wrapped-btc',
+                'tokenize-xchange', 'mantle', 'internet-computer', 'ondo-finance',
+                'first-digital-usd', 'ethereum-classic', 'aave', 'ethena-staked-usde',
+                'official-trump', 'vechain', 'bittensor', 'ethena', 'cosmos', 
+                'blackrock-usd-institutional-digital-liquidity-fund', 'render-token',
+                'filecoin', 'celestia', 'lombard-staked-btc', 'kaspa', 'fasttoken',
+                'polygon-ecosystem-token', 'algorand', 'sonic-3', 'arbitrum', 
+                'kucoin-shares', 'solv-btc', 'fetch-ai', 'optimism', 'story-2', 
+                'kelp-dao-restaked-eth', 'maker', 'jupiter-exchange-solana',
+                'binance-peg-weth', 'nexo', 'xdce-crowd-sale', 'eos', 'binance-staked-sol',
+                'quant-network', 'movement', 'worldcoin-wld', 'usdt0', 'immutable-x', 
+                'rocket-pool-eth', 'blockstack', 'bonk', 'injective-protocol', 
+                'usual-usd', 'the-graph', 'sei-network', 'binance-bridged-usdc-bnb-smart-chain',
+                'flare-networks', 'theta-token', 'polygon-bridged-usdt-polygon', 
+                'lido-dao', 'berachain-bera']
 user = "postgres"
 password = "1234"
 database = "price"

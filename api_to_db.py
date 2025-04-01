@@ -5,6 +5,8 @@ from datetime import datetime
 from pricer import connect, disconnect
 import psycopg2
 
+conn = connect()
+
 def list_ids():
     url = "https://api.coingecko.com/api/v3/coins/markets"
     params = {
@@ -59,7 +61,6 @@ def request_coins(coins_id):
     return days_price
 
 def create_table(coins_id):
-    conn = connect()
     cursor = conn.cursor()
     try:
         for coin_id in coins_id:
@@ -72,7 +73,6 @@ def create_table(coins_id):
             pass
 
 def save_to_db(coins_id):
-    conn = connect()
     cursor = conn.cursor()
     try:
         for coin in coins_id:
