@@ -1,142 +1,149 @@
 import argparse
-import re
 import psycopg2
+from setting import valied_names, user, password, database
 
-def add_item(items, date, name, price):
-    items[date] = (name, price)
-    return items
+def connect():
+    conn = psycopg2.connect( user=user, password=password,
+                            database=database)
+    return conn
 
-def save_to_psql(items):
-    
-    valied_names = ["bitcoin", "dogecoin", "dollar_toman", "ethereum", "seke_toman"]
-    if items[date][0] not in valied_names:
+def disconnect():
+    conn = connect()
+    cursor = conn.cursor()
+    cursor.close()
+    conn.close()
+
+def save(date, name, price):
+    conn = connect()
+    if name not in valied_names:
         print("Name is not correct!")        
     else:
         try:
-            conn = psycopg2.connect( user="postgres", password="1234", database="postgres")
-            cursor = conn.cursor()
-            for date, (name, price) in items.items():
-                cursor.execute("insert into %s values ('%s', '%s', %s );" %(name, date, name, price ))
-            conn.commit()
-            cursor.close()
-            conn.close()
+            cursor = conn.cursor() 
+            cursor.execute("insert into %s values ('%s', '%s', %s );"
+                           %(name, date, name, price ))
+            conn.commit() 
         except psycopg2.Error as e:
             print("database error: %s" % e)
     
-def load_from_psql(table_name):
+def db_select_all(name):
     items = {}
-    valied_tables = ["bitcoin", "dogecoin", "dollar_toman", "ethereum", "seke_toman"]
-    if table_name not in valied_tables:
+    conn = connect()
+    if name not in valied_names:
         print("Table name is not correct!")        
-    try:
-        conn = psycopg2.connect( user="postgres", password="1234", database="postgres")
-        cursor = conn.cursor()
-        cursor.execute("select * from %s;" % table_name)
-        iitems = cursor.fetchall()
-        for row in iitems:
-            time, name, price = row
-            date = re.sub(r'(.*)-(.*)-(.*)',r'\1/\2/\3',time)
-            items[date] = (name , price)
-        cursor.close()
-        conn.close()
-    except psycopg2.Error as e:
-        print("database error: %s" % e)
+    else:
+        try:
+            cursor = conn.cursor()
+            cursor.execute("select * from %s;" % name)
+            item = cursor.fetchall()
+            for row in item:
+                date, name, price = row
+                items[date] = (name , price)
+        except psycopg2.Error as e:
+            print("database error: %s" % e)
     return items
+
+def db_select_one(name, type, column):
+    item = {}
+    conn = connect()
+    if name not in valied_names:
+        print("table_name is not correct!")
+    else:
+        try:
+            cursor = conn.cursor()
+            cursor.execute("select * from %s where %s='%s';"
+                           %(name, type, column))
+            one = cursor.fetchall()
+            date, name, price = one
+            item[date] = (name, price)
+        except psycopg2.Error as e:
+            print("database error: %s" % e)
+    return item
 
 def display_items(items):
     for date, (name, price) in items.items():
         print(f"{date} - {name}: {price}")
 
-def filter_item(items, name):
-    found = False
-    for date, (item_name, price) in items.items():
-        if item_name == name:
-            print(f"{date} - {name}: {price}")
-            found = True
-    if not found:
-        print(f"'{name}' was not found.")
+def filter_item(items):
+        for date, (name, price) in items.items():
+            print(f"{date}-{name}: {price}")
 
 def sort_items(items, reverse=False):
-    sorted_items = dict(sorted(items.items(), key=lambda item: item[1], reverse=reverse))
+    sorted_items = dict(sorted(items.items(), key=lambda item: item[1],
+                               reverse=reverse))
     display_items(sorted_items)
 
-def report(items):
-    if items:
-        max_price_item = max(items.items(), key=lambda x: x[1][1])
-        min_price_item = min(items.items(), key=lambda x: x[1][1])
-        print(f"Highest price: {max_price_item[1][0]} at the price {max_price_item[1][1]} (Date: {max_price_item[0]})")
-        print(f"Lowest price: {min_price_item[1][0]} at the price {min_price_item[1][1]} (Date: {min_price_item[0]})")
-    else:
-        print("There are no items.")
+def report(name):
+    conn = connect()
+    cursor = conn.cursor()
+    cursor.execute("select max(price) as maxvalue, min(price) as minvalue from %s;" % name)
+    max_min = cursor.fetchone()
+    max_price, min_price = max_min
+    cursor.execute(f"select * from {name} where price='{max_price}';")
+    max_rec = cursor.fetchone()
+    cursor.execute(f"select * from {name} where price='{min_price}';")
+    min_rec = cursor.fetchone()
+    date0, name0, price0 = max_rec
+    date1, name1, price1 = min_rec
+    print(f"highest price: {name0} at the price {price0} (Date: {date0})")
+    print(f"lowest price: {name1} at the price {price1} (Date: {date1})")
 
-def price_item(items, date, name):
-        
-        if date in items:
-            print(name, " in ", date, ": ", items[date][1])
-        else:
-            print("%s on %s not found." %(name,date))
+def price_item(date, name):
+        conn = connect()
+        cursor = conn.cursor()
+        cursor.execute(f"select * from {name} where date='{date}';")
+        price = cursor.fetchone()
+        date0, name0, price0 = price  
+        print(f"{name0} on {date0}: {price0}.") 
+        if price is None:
+            print(f"{name} on {date} not found!") 
          
 def main():
     parser = argparse.ArgumentParser(description="pricing plan")
-    parser.add_argument("action", choices=["add", "list", "filter", "sort", "report", "price"], help="The opeartion you want to performe")
+    parser.add_argument("action", choices=["add", "list", "filter", "sort",
+            "report", "price"], help="The opeartion you want to performe")
     parser.add_argument("--date", type=str, help="item date")
     parser.add_argument("--name", type=str, help="item name")
     parser.add_argument("--price", type=float, help="item price")
-    parser.add_argument("--reverse", action="store_true", help="sort in descending order")
+    parser.add_argument("--reverse", action="store_true",
+                        help="sort in descending order")
 
     args = parser.parse_args()
-    items = load_from_psql(args.name) if args.name else {}
+    items = db_select_all(args.name) if args.name else {}
 
-    if args.action == "price":
-        if args.name and args.date:
-            price_item(items, args.date, args.name)
-        else:
-            print("please provide both --name and --date!")
-    
     if args.action == "add":
         if args.date and args.name and args.price is not None:
-            items = add_item(items, args.date, args.name, args.price)
-            save_to_psql(items)
+            save(args.date, args.name, args.price)
             print(f"item: '{args.name}' at the price {args.price} on date of {args.date} added.")
         else:
             print("please insert name, price and date of currency.")
     elif args.action == "list":
-        display_items(items)
+        if args.name is not None:
+            display_items(items)
+        else:
+            print("please insert name of currency with --name")    
     elif args.action == "filter":
         if args.name:
-            filter_item(items, args.name)
+            filter_item(items)
         else:
             print("please insert name of item.")
     elif args.action == "sort":
-        sort_items(items, args.reverse)
+        if args.name and args.reverse is not None:
+            sort_items(items, args.reverse)
+        else:
+            print("please use --name and --reverse")
     elif args.action == "report":
-        report(items)
-
+        if args.name is not None:
+            report(args.name)
+        else:
+            print("please insert name of currency with --name")
+    elif args.action == "price":
+        if args.name and args.date:
+            price_item(args.date, args.name)
+        else:
+            print("please provide both --name and --date!")
+            
+    disconnect() #from psql database
+    
 if __name__ == "__main__":
     main()
-
-
-
-
-
-
-#def save_to_csv(items, filename="prices.csv"):
-#    with open(filename, mode="w", newline='') as file:
- #       writer = csv.writer(file)
-  #      writer.writerow(["Name", "Price"])
-   #     for name, price in items.items():
-    #        writer.writerow([name, price])
-
-
-#def load_from_csv(filename="items.csv"):
- #   items = {}
-  #  try:
-   #     with open(filename, mode="r") as file:
-    #        reader = csv.reader(file)
-     #       next(reader)  
-      #      for row in reader:
-       #         name, price = row
-        #        items[name] = float(price)
-#    except FileNotFoundError:
- #       pass
-  #  return items
