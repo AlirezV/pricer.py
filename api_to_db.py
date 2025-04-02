@@ -60,6 +60,21 @@ def request_coins(coins_id):
     time.sleep(10)
     return days_price
 
+def today_price(coin_id):
+    url = "https://api.coingecko.com/api/v3/simple/price"
+    params = {
+    "ids": f"{coin_id}",
+    "vs_currencies": "usd"
+    }
+    response = requests.get(url, params=params)
+    if response.status_code == 200:
+        data = response.json()
+        price = data[coin_id]["usd"]
+    else:
+        print(f"today price request had problem cause: {response.status_code}")
+        print(response.text)
+    return price
+
 def create_table(coins_id):
     cursor = conn.cursor()
     try:
